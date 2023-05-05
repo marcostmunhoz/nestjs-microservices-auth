@@ -30,7 +30,6 @@ USER node
 
 FROM node:20-alpine AS production
 
-ENV AUTH_SERVICE_HOST 0.0.0.0
 ENV AUTH_SERVICE_PORT 50051
 
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
