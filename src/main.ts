@@ -3,12 +3,18 @@ import { AppModule } from './app.module';
 import { GrpcOptions, Transport } from '@nestjs/microservices';
 import { protobufPackage } from './auth.pb';
 import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<GrpcOptions>(AppModule, {
+  const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+  const host = config.get('AUTH_SERVICE_HOST');
+  const port = config.get('AUTH_SERVICE_PORT');
+
+  app.connectMicroservice<GrpcOptions>({
     transport: Transport.GRPC,
     options: {
-      url: '0.0.0.0:50051',
+      url: `${host}:${port}`,
       package: protobufPackage,
       protoPath: join(
         'node_modules',
@@ -19,6 +25,6 @@ async function bootstrap() {
     },
   });
 
-  await app.listen();
+  await app.startAllMicroservices();
 }
 bootstrap();
