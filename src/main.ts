@@ -8,12 +8,13 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  const host = config.get('AUTH_SERVICE_SERVER_HOST');
   const port = config.get('AUTH_SERVICE_PORT');
 
   app.connectMicroservice<GrpcOptions>({
     transport: Transport.GRPC,
     options: {
-      url: `0.0.0.0:${port}`,
+      url: `${host}:${port}`,
       package: protobufPackage,
       protoPath: join(
         'node_modules',
