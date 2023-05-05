@@ -24,7 +24,7 @@ RUN npm run build
 
 ENV NODE_ENV production
 
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 USER node
 

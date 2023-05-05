@@ -1,0 +1,20 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args: [
+      'build',
+      '-t',
+      'southamerica-east1-docker.pkg.dev/nestjs-microservices-385318/auth/production',
+      '-f',
+      './Dockerfile',
+      '.',
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args: ['push', 'southamerica-east1-docker.pkg.dev/nestjs-microservices-385318/auth/production']
+source:
+  repoSource:
+    projectId: 'nestjs-microservices-385318'
+    repoName: 'nestjs-microservices-auth'
+    branchName: 'main'
