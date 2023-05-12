@@ -7,72 +7,50 @@ import {
   ValidateResponse,
 } from './auth.pb';
 import { GrpcMethod } from '@nestjs/microservices';
+import { AuthService } from './auth.service';
 
 @Controller()
 export class AuthController {
-  private readonly users = [
-    {
-      id: 1,
-      email: 'user1@example.com',
-      password: 'password1',
-    },
-    {
-      id: 2,
-      email: 'user2@example.com',
-      password: 'password2',
-    },
-    {
-      id: 3,
-      email: 'user3@example.com',
-      password: 'password3',
-    },
-  ];
+  constructor(private readonly authService: AuthService) {}
 
   @GrpcMethod(AUTH_SERVICE_NAME, 'Login')
   async login(request: LoginRequest): Promise<LoginResponse> {
-    const user = this.users.find(
-      (user) =>
-        user.email === request.email && user.password === request.password,
-    );
+    try {
+      const token = await this.authService.authenticate(
+        request.email,
+        request.password,
+      );
 
-    if (!user) {
+      return {
+        status: 200,
+        error: [],
+        token,
+      };
+    } catch (error) {
       return {
         status: 401,
-        error: ['Unauthorized'],
+        error: [error.message],
         token: null,
       };
     }
-
-    const token = Buffer.from(`${user.id}:${user.email}`).toString('base64');
-
-    return {
-      status: 200,
-      error: [],
-      token,
-    };
   }
 
   @GrpcMethod(AUTH_SERVICE_NAME, 'Validate')
   async validate(request: ValidateRequest): Promise<ValidateResponse> {
-    const token = Buffer.from(request.token, 'base64').toString();
-    const [id, email] = token.split(':');
+    try {
+      const user = await this.authService.validate(request.token);
 
-    const user = this.users.find(
-      (user) => user.id === Number(id) && user.email === email,
-    );
-
-    if (!user) {
+      return {
+        status: 200,
+        error: [],
+        accountId: user.accountId,
+      };
+    } catch (error) {
       return {
         status: 401,
-        error: ['Unauthorized'],
+        error: [error.message],
         accountId: null,
       };
     }
-
-    return {
-      status: 200,
-      error: [],
-      accountId: String(user.id),
-    };
   }
 }
